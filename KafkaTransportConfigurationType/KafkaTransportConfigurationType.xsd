@@ -1,0 +1,47 @@
+<!-- Until approved, this version remains a draft of a real thing-->
+
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+            targetNamespace="KTCTtn"
+            xmlnt:tns="KTCTtn"
+            xmlns:a="http://prism.evolveum.com/xml/ns/public/annotation-3"
+            xmlns:c="http://midpoint.evolveum.com/xml/ns/public/common/common-3"
+            elementFormDefault="qualified">
+
+    <xsd:import namespace="http://midpoint.evolveum.com/xml/ns/public/common/common-3"/>
+    <xsd:import namespace="http://prism.evolveum.com/xml/ns/public/types-3"/>
+
+    <xsd:complexType name="KafkaTransportConfigurationType">
+        <xsd:annotation>
+            <xsd:appinfo>
+                <a:extension ref="c:CustomTransportConfigurationType"/>
+            </xsd:appinfo>
+        </xsd:annotation>
+        <xsd:sequence>
+            <xsd:element name="KafkaServerInitialAddress" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>Kafka Server Initial Address</a:displayName>
+                        <a:displayOrder>250</a:displayOrder>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="KafkaServerPort" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>Kafka Server Port</a:displayName>
+                        <a:displayOrder>260</a:displayOrder>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+            <xsd:element name="TopicName" type="xsd:string">
+                <xsd:annotation>
+                    <xsd:appinfo>
+                        <a:displayName>Topic Name</a:displayName>
+                        <a:displayOrder>270</a:displayOrder>
+                    </xsd:appinfo>
+                </xsd:annotation>
+            </xsd:element>
+        </xsd:sequence>
+    </xsd:complexType>
+
+</xsd:schema>
