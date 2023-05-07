@@ -59,8 +59,7 @@ public class KafkaTransport implements Transport<KafkaTransportConfigurationType
 
     private Producer<String, Message> makeKafkaProducer() {
         var props = new Properties();
-        // TODO: get that from the config
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.getKafkaServerInitialAddress());
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, MessageSerializer.class.getName());
 
@@ -122,7 +121,7 @@ public class KafkaTransport implements Transport<KafkaTransportConfigurationType
         }
 
         var producer = Objects.requireNonNull(this.producer);
-        var topic = configuration.getTopic();
+        var topic = configuration.getTopicName();
 
         try {
             LOGGER.trace("Sending message to Kafka topic {}", topic);
