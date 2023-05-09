@@ -4,6 +4,7 @@ import com.evolveum.midpoint.prism.PrismContext;
 import com.evolveum.midpoint.prism.path.ItemName;
 import com.evolveum.midpoint.util.Producer;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.CustomTransportConfigurationType;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.ExpressionType;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -45,6 +46,7 @@ public class KafkaTransportConfigurationType extends CustomTransportConfiguratio
     @XmlElement(name = "kafkaServerInitialAddress")
     public String getKafkaServerInitialAddress() {
         return prismGetPropertyValue(F_KAFKA_SERVER_INITIAL_ADDRESS, String.class);
+
     }
 
     public void setKafkaServerInitialAddress(String value) {

@@ -20,6 +20,7 @@ import com.evolveum.midpoint.transport.impl.TransportUtil;
 import com.evolveum.midpoint.util.logging.LoggingUtils;
 import com.evolveum.midpoint.util.logging.Trace;
 import com.evolveum.midpoint.util.logging.TraceManager;
+import com.evolveum.midpoint.xml.ns._public.common.common_3.CustomTransportConfigurationType;
 import com.evolveum.midpoint.xml.ns._public.common.common_3.FocusType;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.Producer;
@@ -36,33 +37,46 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 
-public class KafkaTransport implements Transport<KafkaTransportConfigurationType> {
+public class KafkaTransport implements Transport<CustomTransportConfigurationType> {
     private static final Trace LOGGER = TraceManager.getTrace(KafkaTransport.class);
     private static final String DOT_CLASS = KafkaTransport.class.getName() + ".";
+    private static final String PATH_SPLITTER = "/";
+    private static final int PARAMS_COUNT = 2;
 
     private String name;
-    private KafkaTransportConfigurationType configuration;
+    private CustomTransportConfigurationType configuration;
     private TransportSupport transportSupport;
     private Producer<String, Message> producer;
+    private String topicName;
+    private String kafkaServerInitialAddress;
 
     @Override
     public void configure(
-        @NotNull KafkaTransportConfigurationType configuration,
+        @NotNull CustomTransportConfigurationType configuration,
         @NotNull TransportSupport transportSupport)
     {
         this.configuration = Objects.requireNonNull(configuration);
         name = Objects.requireNonNull(configuration.getName());
+        parseParams(name);
         this.transportSupport = Objects.requireNonNull(transportSupport);
-
         producer = makeKafkaProducer();
+    }
+
+    private void parseParams(String name) {
+        // example: localhost:9052/testTopic
+        String[] pathParams = name.split(PATH_SPLITTER);
+        if (pathParams.length != PARAMS_COUNT) {
+            throw new IllegalArgumentException();
+        }
+        kafkaServerInitialAddress = pathParams[0];
+        topicName = pathParams[1];
     }
 
     private Producer<String, Message> makeKafkaProducer() {
         var props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, configuration.getKafkaServerInitialAddress());
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServerInitialAddress);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, MessageSerializer.class.getName());
-
         return new KafkaProducer<>(props);
     }
 
@@ -121,16 +135,14 @@ public class KafkaTransport implements Transport<KafkaTransportConfigurationType
         }
 
         var producer = Objects.requireNonNull(this.producer);
-        var topic = configuration.getTopicName();
-
         try {
-            LOGGER.trace("Sending message to Kafka topic {}", topic);
-            producer.send(new ProducerRecord<>(topic, message)).get();
-            LOGGER.trace("Message sent to Kafka topic {}", topic);
+            LOGGER.trace("Sending message to Kafka topic {}", topicName);
+            producer.send(new ProducerRecord<>(topicName, message)).get();
+            LOGGER.trace("Message sent to Kafka topic {}", topicName);
             result.recordSuccess();
         } catch (Throwable e) {
-            LoggingUtils.logException(LOGGER, "Couldn't write message to Kafka topic {}", e, topic);
-            result.recordFatalError("Couldn't write message to Kafka topic " + topic + ": " + e.getMessage(), e);
+            LoggingUtils.logException(LOGGER, "Couldn't write message to Kafka topic {}", e, topicName);
+            result.recordFatalError("Couldn't write message to Kafka topic " + topicName + ": " + e.getMessage(), e);
         }
     }
 
@@ -159,7 +171,7 @@ public class KafkaTransport implements Transport<KafkaTransportConfigurationType
     }
 
     @Override
-    public KafkaTransportConfigurationType getConfiguration() {
+    public CustomTransportConfigurationType getConfiguration() {
         return configuration;
     }
 }
