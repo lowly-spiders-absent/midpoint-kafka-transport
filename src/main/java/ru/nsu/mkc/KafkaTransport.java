@@ -141,7 +141,6 @@ public class KafkaTransport implements Transport<CustomTransportConfigurationTyp
             LOGGER.trace("Message sent to Kafka topic {}", topicName);
             result.recordSuccess();
         } catch (Throwable e) {
-            System.err.println(e.getMessage());
             LoggingUtils.logException(LOGGER, "Couldn't write message to Kafka topic {}", e, topicName);
             result.recordFatalError("Couldn't write message to Kafka topic " + topicName + ": " + e.getMessage(), e);
         }
