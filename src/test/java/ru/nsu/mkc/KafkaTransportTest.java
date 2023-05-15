@@ -90,6 +90,7 @@ class KafkaTransportTest {
         var a = new NotificationMessageAttachmentType();
         a.setContent("{name: Valentine}");
         m2.setFrom("me");
+        m2.getAttachments().add(a);
         kafkaTransport.send(m1, "", null, null, new OperationResult("1"));
         kafkaTransport.send(m2, "", null, null, new OperationResult("2"));
         ConsumerRecords<String, Message> records =
