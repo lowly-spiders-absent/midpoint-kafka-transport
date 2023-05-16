@@ -80,6 +80,7 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka</artifactId>
             <version>${kafka-test.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
