@@ -9,15 +9,10 @@ import ru.nsu.mkc.dto.MessageDto;
 import ru.nsu.mkc.dto.MessageMapper;
 
 import java.nio.charset.StandardCharsets;
-import java.util.Map;
 
 @Slf4j
 public class MessageDeserializer implements Deserializer<Message> {
     private final ObjectMapper objectMapper = new ObjectMapper();
-
-    @Override
-    public void configure(Map<String, ?> configs, boolean isKey) {
-    }
 
     @Override
     public Message deserialize(String topic, byte[] data) {
@@ -26,13 +21,12 @@ public class MessageDeserializer implements Deserializer<Message> {
                 log.error("Null received at deserializing");
                 return null;
             }
-            return MessageMapper.dtoToMessage(objectMapper.readValue(new String(data, StandardCharsets.UTF_8), MessageDto.class));
+
+            return MessageMapper.dtoToMessage(
+                objectMapper.readValue(new String(data, StandardCharsets.UTF_8), MessageDto.class)
+            );
         } catch (Exception e) {
             throw new SerializationException("Error when deserializing byte[] to MessageDto");
         }
-    }
-
-    @Override
-    public void close() {
     }
 }

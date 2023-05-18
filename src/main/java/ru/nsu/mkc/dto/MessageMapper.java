@@ -7,8 +7,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class MessageMapper {
-
-    static public MessageDto messageToDto(Message m) {
+    public static MessageDto messageToDto(Message m) {
         List<AttachmentDto> attachmentDtos = new ArrayList<>();
         for (NotificationMessageAttachmentType a : m.getAttachments()) {
             attachmentDtos.add(attachmentToDto(a));
@@ -18,7 +17,7 @@ public class MessageMapper {
                 .subject(m.getSubject()).build();
     }
 
-    static public Message dtoToMessage(MessageDto m) {
+    public static Message dtoToMessage(MessageDto m) {
         Message converted = new Message();
         converted.setFrom(m.getFrom());
         converted.setTo(m.getTo());
@@ -33,12 +32,12 @@ public class MessageMapper {
         return converted;
     }
 
-    static private AttachmentDto attachmentToDto(NotificationMessageAttachmentType a) {
+    private static AttachmentDto attachmentToDto(NotificationMessageAttachmentType a) {
         return AttachmentDto.builder().content(a.getContent()).contentType(a.getContentType()).
                 fileName(a.getFileName()).contentFromFile(a.getContentFromFile()).build();
     }
 
-    static private NotificationMessageAttachmentType dtoToAttachment(AttachmentDto a) {
+    private static NotificationMessageAttachmentType dtoToAttachment(AttachmentDto a) {
         NotificationMessageAttachmentType converted = new NotificationMessageAttachmentType();
         converted.setContentType(a.getContentType());
         converted.setContent(a.getContent());

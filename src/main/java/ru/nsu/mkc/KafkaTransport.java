@@ -145,9 +145,14 @@ public class KafkaTransport implements Transport<CustomTransportConfigurationTyp
             producer.send(new ProducerRecord<>(topic, message)).get();
             LOGGER.trace("Message sent to Kafka topic {}", topic);
             result.recordSuccess();
-        } catch (Throwable e) {
+        } catch (Exception e) {
             LoggingUtils.logException(LOGGER, "Couldn't write message to Kafka topic {}", e, topic);
             result.recordFatalError("Couldn't write message to Kafka topic " + topic + ": " + e.getMessage(), e);
+
+            // this is one of these cases where the linter is technically correct yet nonsensical...
+            if (e instanceof InterruptedException) {
+                Thread.currentThread().interrupt();
+            }
         }
     }
 
