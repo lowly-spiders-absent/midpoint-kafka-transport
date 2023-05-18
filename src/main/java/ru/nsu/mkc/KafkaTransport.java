@@ -40,14 +40,13 @@ import java.util.Properties;
 public class KafkaTransport implements Transport<CustomTransportConfigurationType> {
     private static final Trace LOGGER = TraceManager.getTrace(KafkaTransport.class);
     private static final String DOT_CLASS = KafkaTransport.class.getName() + ".";
-    private static final String PATH_SPLITTER = "/";
-    private static final int PARAMS_COUNT = 2;
+    private static final String PATH_SEPARATOR = "/";
 
     private String name;
     private CustomTransportConfigurationType configuration;
     private TransportSupport transportSupport;
     private Producer<String, Message> producer;
-    private String topicName;
+    private String topic;
     private String kafkaServerInitialAddress;
 
     @Override
@@ -57,19 +56,21 @@ public class KafkaTransport implements Transport<CustomTransportConfigurationTyp
     {
         this.configuration = Objects.requireNonNull(configuration);
         name = Objects.requireNonNull(configuration.getName());
-        parseParams(name);
+        parseName(name);
         this.transportSupport = Objects.requireNonNull(transportSupport);
         producer = makeKafkaProducer();
     }
 
-    private void parseParams(String name) {
+    private void parseName(String name) {
         // example: localhost:9052/testTopic
-        String[] pathParams = name.split(PATH_SPLITTER);
-        if (pathParams.length != PARAMS_COUNT) {
-            throw new IllegalArgumentException();
+        var slashIndex = name.indexOf(PATH_SEPARATOR);
+
+        if (slashIndex == -1) {
+            throw new IllegalArgumentException("the transport name could not be parsed (expected host:port/topic)");
         }
-        kafkaServerInitialAddress = pathParams[0];
-        topicName = pathParams[1];
+
+        kafkaServerInitialAddress = name.substring(0, slashIndex);
+        topic = name.substring(slashIndex + 1);
     }
 
     private Producer<String, Message> makeKafkaProducer() {
@@ -77,6 +78,7 @@ public class KafkaTransport implements Transport<CustomTransportConfigurationTyp
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaServerInitialAddress);
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, MessageSerializer.class.getName());
+
         return new KafkaProducer<>(props);
     }
 
@@ -87,6 +89,7 @@ public class KafkaTransport implements Transport<CustomTransportConfigurationTyp
         result.addParam("message subject", message.getSubject());
 
         var logToFile = configuration.getLogToFile();
+
         if (logToFile != null) {
             TransportUtil.logToFile(logToFile, TransportUtil.formatToFileNew(message, name), LOGGER);
         }
@@ -102,16 +105,19 @@ public class KafkaTransport implements Transport<CustomTransportConfigurationTyp
 
         String file = configuration.getRedirectToFile();
         if (optionsForFilteringRecipient != 0) {
-            TransportUtil.validateRecipient(allowedRecipientTo, forbiddenRecipientTo, message.getTo(), configuration,
-                task, result,
+            TransportUtil.validateRecipient(
+                allowedRecipientTo, forbiddenRecipientTo, message.getTo(),
+                configuration, task, result,
                 transportSupport.expressionFactory(), MiscSchemaUtil.getExpressionProfile(), LOGGER
             );
-            TransportUtil.validateRecipient(allowedRecipientCc, forbiddenRecipientCc, message.getCc(), configuration,
-                task, result,
+            TransportUtil.validateRecipient(
+                allowedRecipientCc, forbiddenRecipientCc, message.getCc(),
+                configuration, task, result,
                 transportSupport.expressionFactory(), MiscSchemaUtil.getExpressionProfile(), LOGGER
             );
-            TransportUtil.validateRecipient(allowedRecipientBcc, forbiddenRecipientBcc, message.getBcc(), configuration,
-                task, result,
+            TransportUtil.validateRecipient(
+                allowedRecipientBcc, forbiddenRecipientBcc, message.getBcc(),
+                configuration, task, result,
                 transportSupport.expressionFactory(), MiscSchemaUtil.getExpressionProfile(), LOGGER
             );
 
@@ -124,25 +130,24 @@ public class KafkaTransport implements Transport<CustomTransportConfigurationTyp
                     message.setBcc(forbiddenRecipientBcc);
                     writeToFile(message, file, result);
                 }
+
                 message.setTo(allowedRecipientTo);
                 message.setCc(allowedRecipientCc);
                 message.setBcc(allowedRecipientBcc);
             }
-
         } else if (file != null) {
             writeToFile(message, file, result);
             return;
         }
 
-        var producer = Objects.requireNonNull(this.producer);
         try {
-            LOGGER.trace("Sending message to Kafka topic {}", topicName);
-            producer.send(new ProducerRecord<>(topicName, message)).get();
-            LOGGER.trace("Message sent to Kafka topic {}", topicName);
+            LOGGER.trace("Sending message to Kafka topic {}", topic);
+            producer.send(new ProducerRecord<>(topic, message)).get();
+            LOGGER.trace("Message sent to Kafka topic {}", topic);
             result.recordSuccess();
         } catch (Throwable e) {
-            LoggingUtils.logException(LOGGER, "Couldn't write message to Kafka topic {}", e, topicName);
-            result.recordFatalError("Couldn't write message to Kafka topic " + topicName + ": " + e.getMessage(), e);
+            LoggingUtils.logException(LOGGER, "Couldn't write message to Kafka topic {}", e, topic);
+            result.recordFatalError("Couldn't write message to Kafka topic " + topic + ": " + e.getMessage(), e);
         }
     }
 
