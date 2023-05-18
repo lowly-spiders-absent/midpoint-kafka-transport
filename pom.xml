@@ -19,9 +19,6 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- Apparently the parent wants to run its tests; we don't -->
-        <maven.test.skip>true</maven.test.skip>
-
         <!-- We don't have configs for those -->
         <checkstyle.skip>true</checkstyle.skip>
         <mdep.analyze.skip>true</mdep.analyze.skip>
@@ -70,6 +67,7 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
@@ -94,6 +92,14 @@
             <groupId>org.testcontainers</groupId>
             <artifactId>kafka</artifactId>
             <version>1.17.6</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- We don't really use this, but the parent POM specifies testng as a dependency for surefire,
+             and we can't disable it... -->
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -137,21 +143,93 @@
 
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>${surefire.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>default-test</id>
+                        <phase>none</phase>
+                    </execution>
+
+                    <execution>
+                        <id>mkc-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>test</goal>
+                        </goals>
+                    </execution>
+                </executions>
+
+                <configuration combine.self="override">
+                    <systemProperties>
+                        <midpoint.home>target/midpoint-home</midpoint.home>
+                    </systemProperties>
+                </configuration>
+
+                <dependencies>
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-junit-platform</artifactId>
+                        <version>${surefire.version}</version>
+                    </dependency>
+
+                    <dependency>
+                        <groupId>org.apache.maven.surefire</groupId>
+                        <artifactId>surefire-testng</artifactId>
+                        <version>${surefire.version}</version>
+                        <scope>runtime</scope>
+                    </dependency>
+                </dependencies>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+
+                <executions>
+                    <execution>
+                        <!-- disable because we don't have it set up -->
+                        <id>enforce</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>${failsafe.version}</version>
+
+                <executions>
+                    <execution>
+                        <id>integration-test</id>
+                        <phase>none</phase>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+
                 <configuration>
                     <mainClass>com.evolveum.midpoint.web.boot.MidPointSpringApplication</mainClass>
                 </configuration>
+
                 <executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
+
                         <configuration>
-                            <layoutFactory implementation="com.evolveum.midpoint.launcher.MidPointJarLayoutFactory" />
+                            <layoutFactory implementation="com.evolveum.midpoint.launcher.MidPointJarLayoutFactory"/>
                         </configuration>
                     </execution>
                 </executions>
+
                 <dependencies>
                     <dependency>
                         <groupId>com.evolveum.midpoint.tools</groupId>
