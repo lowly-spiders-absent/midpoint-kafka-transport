@@ -25,6 +25,9 @@
 
         <kafka-test.version>3.0.6</kafka-test.version>
         <kafka.version>3.4.0</kafka.version>
+
+        <sonar.organization>lowly-spiders-absent</sonar.organization>
+        <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
     <dependencies>
