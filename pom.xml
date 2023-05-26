@@ -4,19 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <!-- 1. remove link to parent POM
-    <parent>
-        <groupId>com.evolveum.midpoint</groupId>
-        <artifactId>midpoint</artifactId>
-        <version>4.8-SNAPSHOT</version>
-    </parent>
-    -->
-
     <groupId>ru.nsu</groupId>
     <artifactId>midpoint-kafka-transport</artifactId>
-    <!-- change version to something more like 0.0.1
-    <version>4.8-SNAPSHOT</version>
-    -->
     <version>0.0.1</version>
 
     <properties>
@@ -24,99 +13,105 @@
         <maven.compiler.target>11</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <!-- We don't have configs for those -->
-        <checkstyle.skip>true</checkstyle.skip>
-        <mdep.analyze.skip>true</mdep.analyze.skip>
-
+        <!-- refer to https://spring.io/projects/spring-kafka for the compatibility matrix -->
         <kafka-test.version>3.0.6</kafka-test.version>
-        <kafka.version>3.4.0</kafka.version>
+        <kafka.version>3.3.2</kafka.version>
+
+        <!-- as used by midpoint -->
+        <slf4j.version>1.7.36</slf4j.version>
+        <logback.version>1.2.11</logback.version>
+
+        <midpoint.version>4.7</midpoint.version>
 
         <sonar.organization>lowly-spiders-absent</sonar.organization>
         <sonar.host.url>https://sonarcloud.io</sonar.host.url>
     </properties>
 
-    <!-- Version 4.7 is supported from 14.04.2023 to 14.04.2024 -->
-
     <dependencies>
         <dependency>
             <groupId>com.evolveum.midpoint.model</groupId>
             <artifactId>model-impl</artifactId>
-            <version>4.7</version>
-
+            <version>${midpoint.version}</version>
             <scope>provided</scope>
-
         </dependency>
 
         <dependency>
             <groupId>com.evolveum.midpoint.model</groupId>
             <artifactId>notifications-api</artifactId>
-            <version>4.7</version>
-
+            <version>${midpoint.version}</version>
             <scope>provided</scope>
 
+            <exclusions>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-core</artifactId>
+                </exclusion>
+
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
             <groupId>com.evolveum.midpoint.model</groupId>
             <artifactId>notifications-impl</artifactId>
-            <version>4.7</version>
-
+            <version>${midpoint.version}</version>
             <scope>provided</scope>
-
         </dependency>
 
         <dependency>
             <groupId>com.evolveum.midpoint.model</groupId>
             <artifactId>model-api</artifactId>
-            <version>4.7</version>
-
+            <version>${midpoint.version}</version>
             <scope>provided</scope>
-
         </dependency>
 
+        <!-- TODO: the hell this is doing here -->
         <dependency>
             <groupId>com.evolveum.midpoint.gui</groupId>
             <artifactId>admin-gui</artifactId>
-            <version>4.7</version>
-
+            <version>${midpoint.version}</version>
             <scope>provided</scope>
-
         </dependency>
 
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
-
-            <version>3.4.0</version>
-
+            <version>${kafka.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-
             <version>1.18.24</version>
-
         </dependency>
 
-        <!---->  
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-simple</artifactId>
-
-            <version>2.0.6</version>
-
-            <scope>provided</scope>
-
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-classic</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
         </dependency>
-        <!---->
+
+        <dependency>
+            <groupId>ch.qos.logback</groupId>
+            <artifactId>logback-core</artifactId>
+            <version>${logback.version}</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter</artifactId>
-
             <version>5.8.2</version>
-
             <scope>test</scope>
         </dependency>
 
@@ -131,24 +126,6 @@
             <groupId>org.springframework.kafka</groupId>
             <artifactId>spring-kafka-test</artifactId>
             <version>${kafka-test.version}</version>
-            <scope>test</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>org.testcontainers</groupId>
-            <artifactId>kafka</artifactId>
-            <version>1.17.6</version>
-            <scope>test</scope>
-        </dependency>
-
-        <!-- We don't really use this, but the parent POM specifies testng as a dependency for surefire,
-             and we can't disable it... -->
-        <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-
-            <version>7.1.0</version> <!-- 1 vulnurability but lots of users -->
-
             <scope>test</scope>
         </dependency>
     </dependencies>
@@ -181,7 +158,7 @@
     </pluginRepositories>
 
     <build>
-        <finalName>midpoint</finalName>
+        <finalName>midpoint-kafka-transport</finalName>
 
         <resources>
             <resource>
@@ -198,11 +175,6 @@
 
                 <executions>
                     <execution>
-                        <id>default-test</id>
-                        <phase>none</phase>
-                    </execution>
-
-                    <execution>
                         <id>mkc-test</id>
                         <phase>test</phase>
                         <goals>
@@ -211,90 +183,11 @@
                     </execution>
                 </executions>
 
-                <configuration combine.self="override">
-                    <systemProperties>
-                        <midpoint.home>target/midpoint-home</midpoint.home>
-                    </systemProperties>
-                </configuration>
-
                 <dependencies>
                     <dependency>
                         <groupId>org.apache.maven.surefire</groupId>
                         <artifactId>surefire-junit-platform</artifactId>
                         <version>2.22.2</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.apache.maven.surefire</groupId>
-                        <artifactId>surefire-testng</artifactId>
-                        <version>2.22.2</version>
-                        <scope>runtime</scope>
-                    </dependency>
-                </dependencies>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-enforcer-plugin</artifactId>
-                <version>3.1.0</version>
-
-                <executions>
-                    <execution>
-                        <!-- disable because we don't have it set up -->
-                        <id>enforce</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-failsafe-plugin</artifactId>
-                <version>3.1.0</version>
-
-                <executions>
-                    <execution>
-                        <id>integration-test</id>
-                        <phase>none</phase>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-
-                <version>3.1.0</version>
-
-                <configuration>
-                    <!--
-                        according to docs.spring.io,
-                        spring-boot-maven-plugin has a convenient
-                        'skip' parameter that is easy to use
-                        if we want to disable the plugin
-                    -->
-                    <skip>true</skip>
-                    <mainClass>com.evolveum.midpoint.web.boot.MidPointSpringApplication</mainClass>
-                </configuration>
-
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>repackage</goal>
-                        </goals>
-
-                        <configuration>
-                            <layoutFactory implementation="com.evolveum.midpoint.launcher.MidPointJarLayoutFactory"/>
-                        </configuration>
-                    </execution>
-                </executions>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>com.evolveum.midpoint.tools</groupId>
-                        <artifactId>midpoint-boot-layout</artifactId>
-                        <version>4.7</version>
-                        <!-- <scope>provided</scope> -->
                     </dependency>
                 </dependencies>
             </plugin>

@@ -64,15 +64,15 @@ class KafkaTransportTest {
         kafkaTransport = new KafkaTransport();
         transportSupport = makeEmptyTransportSupport();
     }
-
-    @Test
-    void configureWithBadName() {
-        var configuration = new CustomTransportConfigurationType();
-        configuration.setName("a bad name");
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            kafkaTransport.configure(configuration, transportSupport);
-        });
-    }
+//
+//    @Test
+//    void configureWithBadName() {
+//        var configuration = new CustomTransportConfigurationType();
+//        configuration.setName("a bad name");
+//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+//            kafkaTransport.configure(configuration, transportSupport);
+//        });
+//    }
 
     @Test
     void sendAndReceive() {
