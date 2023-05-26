@@ -73,14 +73,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <!-- TODO: the hell this is doing here -->
-        <dependency>
-            <groupId>com.evolveum.midpoint.gui</groupId>
-            <artifactId>admin-gui</artifactId>
-            <version>${midpoint.version}</version>
-            <scope>provided</scope>
-        </dependency>
-
         <dependency>
             <groupId>org.apache.kafka</groupId>
             <artifactId>kafka-clients</artifactId>
