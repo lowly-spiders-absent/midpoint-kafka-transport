@@ -64,15 +64,15 @@ class KafkaTransportTest {
         kafkaTransport = new KafkaTransport();
         transportSupport = makeEmptyTransportSupport();
     }
-//
-//    @Test
-//    void configureWithBadName() {
-//        var configuration = new CustomTransportConfigurationType();
-//        configuration.setName("a bad name");
-//        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-//            kafkaTransport.configure(configuration, transportSupport);
-//        });
-//    }
+
+    @Test
+    void configureWithBadName() {
+        var configuration = new CustomTransportConfigurationType();
+        configuration.setName("a bad name");
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            kafkaTransport.configure(configuration, transportSupport);
+        });
+    }
 
     @Test
     void sendAndReceive() {
@@ -95,7 +95,7 @@ class KafkaTransportTest {
         kafkaTransport.send(m2, "", null, null, new OperationResult("2"));
         ConsumerRecords<String, Message> records =
                 consumer.poll(Duration.ofMillis(5000));
-        Assertions.assertEquals(records.count(), 2);
+        Assertions.assertEquals(2, records.count());
         var iterator = records.iterator();
         MessageSerializerTest.assertMessageEquals(m1, iterator.next().value());
         MessageSerializerTest.assertMessageEquals(m2, iterator.next().value());
