@@ -95,7 +95,7 @@ class KafkaTransportTest {
         kafkaTransport.send(m2, "", null, null, new OperationResult("2"));
         ConsumerRecords<String, Message> records =
                 consumer.poll(Duration.ofMillis(5000));
-        Assertions.assertEquals(records.count(), 2);
+        Assertions.assertEquals(2, records.count());
         var iterator = records.iterator();
         MessageSerializerTest.assertMessageEquals(m1, iterator.next().value());
         MessageSerializerTest.assertMessageEquals(m2, iterator.next().value());
